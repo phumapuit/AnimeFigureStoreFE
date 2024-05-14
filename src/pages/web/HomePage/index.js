@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { getCategoryList } from '../../../reducers/actions/category';
 
-import LoadingPage from '../../../components/loading';
-import ErrorPage from '../../../components/error';
+import LoadingPage from '../../../components/web/loading';
+import ErrorPage from '../../../components/web/error';
 import { useNavigate  } from 'react-router';
 
 export default function HomePage() {

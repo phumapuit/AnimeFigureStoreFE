@@ -3,8 +3,11 @@ import { combineReducers } from "redux";
 // import movieReducer from "./MovieReducer";
 import userReducer from "./UserReducer";
 import categoryReducer  from "./CategoryReducer";
+import productReducer from "./ProductReducer";
+
 const rootReducer = combineReducers({
-    // authReducer, movieReducer, userReducer, theaterReducer,
-    userReducer, categoryReducer
+    users:userReducer,
+    products: productReducer
+    //     userReducer
 });
 export default rootReducer;

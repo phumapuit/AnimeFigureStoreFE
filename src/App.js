@@ -12,7 +12,11 @@ import Category from "./pages/admin/Category";
 import Order from "./pages/admin/Order";
 import Product from "./pages/admin/Product";
 import User from "./pages/admin/User";
-import ErrorPage from "./components/error";
+import ErrorPage from "./components/web/error";
+import Profile from "./pages/admin/Profile";
+import Dashboard from "./pages/admin/Dashboard";
+import "./assets/styles/main.css";
+import "./assets/styles/responsive.css";
 
 function App() {
     useEffect(() => {
@@ -33,6 +37,8 @@ function App() {
                     <Route path="products" element={<Product />} />
                     <Route path="categories" element={<Category />} />
                     <Route path="orders" element={<Order />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="profile" element={<Profile />} />
                 </Route>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
