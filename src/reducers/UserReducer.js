@@ -11,11 +11,22 @@ import {
   ADD_USER_REQUEST,
   ADD_USER_SUCCESS,
   ADD_USER_FAIL,
+  GET_USER_DETAIL_REQUEST,
+  GET_USER_DETAIL_SUCCESS,
+  GET_USER_DETAIL_FAIL,
+  CHANGE_STATUS_USER_REQUEST,
+  CHANGE_STATUS_USER_SUCCESS,
+  CHANGE_STATUS_USER_FAIL,
+  GET_USER_ROLE_LIST_REQUEST,
+  GET_USER_ROLE_LIST_SUCCESS,
+  GET_USER_ROLE_LIST_FAIL,
 } from "./constants/user";
 const initialUserState = {
   usersList: [],
+  rolesList: [],
+  userDetail: null,
   loading: false,
-  error: null
+  error: null,
 };
 const userReducer = (state = initialUserState, action) => {
   switch (action.type) {
@@ -25,9 +36,9 @@ const userReducer = (state = initialUserState, action) => {
     case GET_USER_LIST_SUCCESS: {
       return {
         ...state,
-        usersList: action.payload.data,
+        usersList: action.payload.data.data,
         loading: false,
-        error: null
+        error: null,
       };
     }
     case GET_USER_LIST_FAIL: {
@@ -37,79 +48,130 @@ const userReducer = (state = initialUserState, action) => {
         loading: false,
       };
     }
-    //
-    // case DELETE_USER_REQUEST: {
-    //   return {
-    //     ...state,
-    //     loading: true,
-    //     error: null,
-    //     message: null,
-    //   };
-    // }
-    // case DELETE_USER_SUCCESS: {
-    //   // xóa thành công chỉ trả về câu commnet thành công nên không cần thiết phải in ra
-    //   const index = state.usersList.findIndex((user) => user.taiKhoan === action.payload.userSelected);
-    //   state.usersList.splice(index, 1);
-    //   return {
-    //     ...state,
-    //     loading: false,
-    //   };
-    // }
-    // case DELETE_USER_FAIL: {
-    //   return {
-    //     ...state,
-    //     loading: false,
-    //     error: action.payload.error,
-    //   };
-    // }
-    //
-    // case UPDATE_USER_REQUEST: {
-    //   return {
-    //     ...state,
-    //     loading: true,
-    //     error: null,
-    //   };
-    // }
-    // case UPDATE_USER_SUCCESS: {
-    //   const userUpdate = action.payload.userSelected;
-    //   // const userUpdate = action.payload.data vì data trả về ko có soDt và maLoaiNguoiDung nên ko thể dùng
-    //   const index = state.usersList.findIndex((user) => user.taiKhoan === userUpdate.taiKhoan);
-    //   state.usersList[index] = userUpdate;
-    //   return {
-    //     ...state,
-    //     loading: false,
-    //   };
-    // }
-    // case UPDATE_USER_FAIL: {
-    //   return {
-    //     ...state,
-    //     loading: false,
-    //     error: action.payload.error,
-    //   };
-    // }
-    //
-    // case ADD_USER_REQUEST: {
-    //   return {
-    //     ...state,
-    //     loading: true,
-    //     error: null,
-    //   };
-    // }
-    // case ADD_USER_SUCCESS: {
-    //   const userAdd = action.payload.userAdd;
-    //   state.usersList.unshift(userAdd);
-    //   return {
-    //     ...state,
-    //     loading: false,
-    //   };
-    // }
-    // case ADD_USER_FAIL: {
-    //   return {
-    //     ...state,
-    //     loading: false,
-    //     error: action.payload.error,
-    //   };
-    // }
+
+    case GET_USER_ROLE_LIST_REQUEST: {
+      return { ...state, loading: true, error: null };
+    }
+    case GET_USER_ROLE_LIST_SUCCESS: {
+      return {
+        ...state,
+        rolesList: action.payload.data.data,
+        loading: false,
+        error: null,
+      };
+    }
+    case GET_USER_ROLE_LIST_FAIL: {
+      return {
+        ...state,
+        error: action.payload.error,
+        loading: false,
+      };
+    }
+
+    case GET_USER_DETAIL_REQUEST: {
+      return { ...state, loading: true, error: null };
+    }
+    case GET_USER_DETAIL_SUCCESS: {
+      return {
+        ...state,
+        userDetail: action.payload.data.data,
+        loading: false,
+        error: null,
+      };
+    }
+    case GET_USER_DETAIL_FAIL: {
+      return {
+        ...state,
+        error: action.payload.error,
+        loading: false,
+      };
+    }
+      //
+    case CHANGE_STATUS_USER_REQUEST: {
+      return {
+        ...state,
+        loading: true,
+        error: null,
+        message: null,
+      };
+    }
+    case CHANGE_STATUS_USER_SUCCESS: {
+      const { arrUserId } = action.payload;
+      return {
+        ...state,
+        usersList: state.usersList.map((user) => (arrUserId.includes(user.userId) ? { ...user, deleted: !user.deleted } : user)),
+        loading: false,
+      };
+    }
+    case CHANGE_STATUS_USER_FAIL: {
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+      };
+    }
+      //
+      // case UPDATE_USER_REQUEST: {
+      //   return {
+      //     ...state,
+      //     loading: true,
+      //     error: null,
+      //   };
+      // }
+      // case UPDATE_USER_SUCCESS: {
+      //   const userUpdate = action.payload.userSelected;
+      //   // const userUpdate = action.payload.data vì data trả về ko có soDt và maLoaiNguoiDung nên ko thể dùng
+      //   const index = state.usersList.findIndex((user) => user.taiKhoan === userUpdate.taiKhoan);
+      //   state.usersList[index] = userUpdate;
+      //   return {
+      //     ...state,
+      //     loading: false,
+      //   };
+      // }
+      // case UPDATE_USER_FAIL: {
+      //   return {
+      //     ...state,
+      //     loading: false,
+      //     error: action.payload.error,
+      //   };
+      // }
+      //
+    case ADD_USER_REQUEST: {
+      return {
+        ...state,
+        loading: true,
+        error: null,
+      };
+    }
+    case ADD_USER_SUCCESS: {
+      const userAdd = action.payload.data.data;
+      const configUser = {
+        userId: userAdd["userId"],
+        fullName: userAdd["fullname"],
+        address: userAdd["address"],
+        phoneNumber: userAdd["phonenumber"],
+        email: userAdd["email"],
+        dob: userAdd["dob"],
+        avatar: userAdd["avatar"],
+        roleId: userAdd["roles"][0]["roleId"],
+        roleName: userAdd["roleName"],
+        password: userAdd["password"],
+        deleted: userAdd["deleted"],
+      };
+      return {
+        ...state,
+        usersList: [...state.usersList, configUser],
+        loading: false,
+        error: null,
+      };
+    }
+    case ADD_USER_FAIL: {
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.error,
+      };
+    }
     default:
       return state;
   }

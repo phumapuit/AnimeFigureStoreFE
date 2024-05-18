@@ -402,9 +402,9 @@ h4 {
   line-height: normal;
 }
 
-.ant-btn svg {
-  margin-right: 5px;
-}
+/*.ant-btn svg {*/
+/*  margin-right: 5px;*/
+/*}*/
 .layout-dashboard .header-control svg {
   width: 20px;
   height: 20px;
@@ -2661,4 +2661,7 @@ section.ant-layout.ant-layout-has-sider.layout-dashboard.layout-profile .header-
   border-radius: 10px;
   background-color: #F5F5F5;
 }
-/*.layout-dashboard .ant-layout-sider.sider-primary:hover*/
+/*CUSTOM SWEETALERT2*/
+.swal2-shown{
+    padding-right: 0!important;
+}

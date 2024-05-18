@@ -17,28 +17,30 @@ const usersAPI = {
         const path = "/user/find-all-user";
         return axiosClient.get(path);
     },
+    getUserRoleList: () => {
+        const path = "/role/get-all-role";
+        return axiosClient.get(path);
+    },
 
-    // postThemNguoiDung: (user) => {
-    //     const path = "/QuanLyNguoiDung/ThemNguoiDung";
-    //
-    //     return axiosClient.post(path, user);
-    // },
-    //
-    // deleteXoaNguoiDung: (taiKhoan) => {
-    //     const path = `/QuanLyNguoiDung/XoaNguoiDung?TaiKhoan=${taiKhoan}`;
-    //
-    //     return axiosClient.delete(path);
-    // },
-    //
+    postAddUser: (user) => {
+        const path = "/user/add-new-user";
+        return axiosClient.post(path, user);
+    },
+
+    postChangeStatusUser: (arrUserId) => {
+        const path = "/user/change-status-user";
+        return axiosClient.post(path, arrUserId);
+    },
+
     // editTaiKhoan: (user) => {
     //     const path = `/QuanLyNguoiDung/CapNhatThongTinNguoiDung`;
     //     return axiosClient.put(path, user);
     // },
-    //
-    // getThongTinTaiKhoan: (info) => {
-    //     const path = `/QuanLyNguoiDung/ThongTinTaiKhoan`;
-    //     return axiosClient.post(path, info);
-    // },
+
+    getUserDetail: (userId) => {
+        const path = `/user/get-info-user/${userId}`;
+        return axiosClient.get(path);
+    },
 };
 
 export default usersAPI;
