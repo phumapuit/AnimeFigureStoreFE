@@ -1,4 +1,5 @@
 import axiosClient from "./axiosClient";
+import {Axios as axios} from "axios";
 
 const usersAPI = {
     //post user:object gồm taiKhoan, matKhau, email,...
@@ -22,9 +23,11 @@ const usersAPI = {
         return axiosClient.get(path);
     },
 
-    postAddUser: (user) => {
+    postAddUser: (formData) => {
         const path = "/user/add-new-user";
-        return axiosClient.post(path, user);
+        return axiosClient.post(path, formData, {headers: {
+                "Content-Type": 'multipart/form-data',
+            }});
     },
 
     postChangeStatusUser: (arrUserId) => {
@@ -32,10 +35,12 @@ const usersAPI = {
         return axiosClient.post(path, arrUserId);
     },
 
-    // editTaiKhoan: (user) => {
-    //     const path = `/QuanLyNguoiDung/CapNhatThongTinNguoiDung`;
-    //     return axiosClient.put(path, user);
-    // },
+    postUpdateUser: (formData) => {
+        const path = `/user/update-info-user`;
+        return axiosClient.post(path, formData, {headers: {
+                "Content-Type": 'multipart/form-data',
+            }});
+    },
 
     getUserDetail: (userId) => {
         const path = `/user/get-info-user/${userId}`;

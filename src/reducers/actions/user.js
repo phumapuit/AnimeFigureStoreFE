@@ -26,8 +26,9 @@ import {
     CHANGE_STATUS_USER_SUCCESS,
     GET_USER_ROLE_LIST_REQUEST,
     GET_USER_ROLE_LIST_FAIL,
-    GET_USER_ROLE_LIST_SUCCESS
+    GET_USER_ROLE_LIST_SUCCESS, RESET_USER_DETAIL
 } from '../constants/user';
+import {Axios as axios} from "axios";
 //
 // export const login = (user) => {
 //     return (dispatch) => {
@@ -173,30 +174,35 @@ export const changeStatusUser = (arrUserId) => {
     }
 }
 
+export const resetUserDetail = () => {
+    return {
+        type: RESET_USER_DETAIL
+    }
+}
 
-export const updateUser = (user) => {
+export const updateUser = (formData) => {
     return (dispatch) => {
-        // dispatch({
-        //     type: UPDATE_USER_REQUEST
-        // })
-        // usersApi.editTaiKhoan(user)
-        //     .then(result => {
-        //         dispatch({
-        //             type: UPDATE_USER_SUCCESS,
-        //             payload: {
-        //                 data: result.data,
-        //                 userSelected: user
-        //             }
-        //         })
-        //     })
-        //     .catch(
-        //         error => {
-        //             dispatch({
-        //                 type: UPDATE_USER_FAIL,
-        //                 payload: { error: error.message }
-        //             })
-        //         }
-        //     )
+        dispatch({
+            type: UPDATE_USER_REQUEST
+        })
+        usersAPI.postUpdateUser(formData)
+            .then(result => {
+                dispatch({
+                    type: UPDATE_USER_SUCCESS,
+                    payload: {
+                        data: result.data,
+                        formData: formData
+                    }
+                })
+            })
+            .catch(
+                error => {
+                    dispatch({
+                        type: UPDATE_USER_FAIL,
+                        payload: { error: error.message }
+                    })
+                }
+            )
     }
 }
 

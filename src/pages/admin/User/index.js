@@ -1,7 +1,7 @@
-import { Card, Radio, Table, Avatar, Button } from "antd";
+import {Card, Radio, Table, Avatar, Button, Typography} from "antd";
 import { EditFilled, EyeFilled, EyeInvisibleFilled } from "@ant-design/icons";
 import avatar from "../../../assets/images/avatarUser.png";
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { changeStatusUser, getUserRoleList, getUsersList } from "../../../reducers/actions/user";
 import Tooltip from "antd/es/tooltip";
@@ -25,13 +25,13 @@ export default function User() {
             title: "TÊN NGƯỜI DÙNG",
             dataIndex: "nameUser",
             key: "nameUser",
-            width: "15%",
+            width: "10%",
             ellipsis: {
                 showTitle: false,
             },
-            render: (nameProduct) => (
-                <Tooltip placement="topLeft" title={nameProduct}>
-                    {nameProduct}
+            render: (nameUser) => (
+                <Tooltip placement="topLeft" title={nameUser}>
+                    {nameUser}
                 </Tooltip>
             ),
             sorter: (a, b) => a.nameUser.localeCompare(b.nameUser),
@@ -62,7 +62,7 @@ export default function User() {
             title: "ĐỊA CHỈ",
             dataIndex: "addressUser",
             key: "addressUser",
-            width: "15%",
+            // width: "15%",
             ellipsis: {
                 showTitle: false,
             },
@@ -85,6 +85,14 @@ export default function User() {
             dataIndex: "role",
             key: "role",
             width: "10%",
+            ellipsis: {
+                showTitle: false,
+            },
+            render: (role) => (
+                <Tooltip placement="topLeft" title={role}>
+                    {role}
+                </Tooltip>
+            ),
             sorter: (a, b) => a.role.localeCompare(b.role),
         },
         {
@@ -94,6 +102,14 @@ export default function User() {
             width: "8%",
             align: "right",
             fixed: "right",
+            render(text, record){
+                return{
+                    props:{
+                        style: {color: text === disabled ? "#ff7875" : "#28a745", fontWeight: '600' }
+                    },
+                    children: <span>{text}</span>
+                }
+            }
         },
         {
             title: "THAO TÁC",
@@ -104,15 +120,23 @@ export default function User() {
             fixed: "right",
         },
     ];
-    // GET DATA FORM userREDUCER STORE
     const dispatch = useDispatch();
+
     useEffect(() => {
         console.log("DISPATCH ACTION GET USER LIST");
         dispatch(getUsersList());
         dispatch(getUserRoleList());
     }, []);
-
+    const { usersList, rolesList, loading, error } = useSelector((state) => state.users);
+    const [open, setOpen] = useState(false);
+    const [userIdEdit, setUserIdEdit] = useState(0);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+    const hasSelected = selectedRowKeys.length > 0; // DÙNG BIẾN NÀY LẤY DANH SÁCH MÃ ID ĐƯỢC CHECK, ĐỂ XÁC ĐỊNH DISABLE NUT DELETE ĐI HAY KHÔNG
+
+    const [confirmLoading, setConfirmLoading] = useState(false);
+
+    const onChange = (e) => console.log(`radio checked:${e.target.value}`);
     const onSelectChange = (newSelectedRowKeys) => {
         console.log("selectedRowKeys changed: ", newSelectedRowKeys);
         setSelectedRowKeys(newSelectedRowKeys);
@@ -121,34 +145,18 @@ export default function User() {
         getCheckboxProps: (record) => ({
             disabled: record.status === disabled, // Disable checkbox if user is "off"
         }),
+
         selectedRowKeys,
         onChange: onSelectChange,
     };
-    const hasSelected = selectedRowKeys.length > 0; // DÙNG BIẾN NÀY LẤY DANH SÁCH MÃ ID ĐƯỢC CHECK, ĐỂ XÁC ĐỊNH DISABLE NUT DELETE ĐI HAY KHÔNG
-
-    // OPEN FORM ADD USER
-    const [open, setOpen] = useState(false);
-    const [userIdEdit, setUserIdEdit] = useState(0);
-    const [callAPI, setCallAPI] = useState(false);
-    const [confirmLoading, setConfirmLoading] = useState(false);
-    const [modalText, setModalText] = useState("Content of the modal");
     const openFormAdd = () => {
-        setIsAdd(true);
-        setIsEdit(false);
         setOpen(true);
-        setCallAPI(true);
     };
     const openFormEdit = (event) => {
-        setIsAdd(false);
-        setIsEdit(true);
         setOpen(true);
-        setCallAPI(true);
         const userId = event.currentTarget.getAttribute("data-user-id");
         setUserIdEdit(userId);
     };
-    const [isAdd, setIsAdd] = useState(false);
-    const [isEdit, setIsEdit] = useState(false);
-
     const handleMultipleStatusUser = () => {
         Swal.fire({
             title: "Bạn có muốn thay đổi?",
@@ -234,8 +242,7 @@ export default function User() {
         //     }
         // }
     };
-    const { usersList, loading, error } = useSelector((state) => state.users);
-    const { rolesList } = useSelector((state) => state.users);
+
     if (loading) {
         return <h1>TẢI LÂU VCLLLLLLLLLLLLLLLLLL</h1>;
     }
@@ -243,15 +250,13 @@ export default function User() {
     //     return <h1>TẮT SERVER CMNRRRRRRRRRRRRRRRRRRR</h1>;
     // }
     let dataUser = [];
-    let dateFormat = "";
-    usersList.map((userItem, index) => {
-        // console.log(userItem)
+    usersList.map((userItem) => {
         return dataUser.push({
             key: userItem["userId"],
             image: (
                 <>
                     <Avatar.Group>
-                        <Avatar className="shape-avatar" shape="square" size={40} src={userItem["images"] ? "http://localhost:8080" + userItem["images"] : avatar} />
+                        <Avatar className="shape-avatar" shape="square" size={40} src={userItem["avatar"] ? "http://localhost:8080" + userItem["avatar"] : avatar} />
                     </Avatar.Group>{" "}
                 </>
             ),
@@ -260,12 +265,23 @@ export default function User() {
             addressUser: userItem["address"],
             phoneNumberUser: userItem["phoneNumber"],
             dateOfBirdUser: userItem["dob"],
-            role: userItem["roleName"] ? userItem["roleName"] : "Không rõ",
+            role: userItem["roleList"]
+                ? userItem["roleList"].map(role => role["roleName"]).join(", ")
+                : "Không rõ",
+
             status: userItem["deleted"] ? disabled : enable,
+
             action: (
                 <>
                     <Tooltip title="Edit">
-                        <Button type="primary" shape="circle" size="large" icon={<EditFilled />} data-user-id={userItem["userId"]} onClick={(event) => openFormEdit(event)} />
+                        <Button
+                            disabled = {userItem["deleted"]}
+                            type="primary"
+                            shape="circle"
+                            size="large"
+                            icon={<EditFilled />}
+                            data-user-id={userItem["userId"]}
+                            onClick={userItem["deleted"]?(e)=>e.preventDefault():(event) => openFormEdit(event)} />
                     </Tooltip>
                     <Tooltip title={userItem["deleted"] ? "Active" : "Disabled"}>
                         <Button
@@ -283,8 +299,8 @@ export default function User() {
             ),
         });
     });
-    //{/*(userItem["deleted"], this)*/}
-    const onChange = (e) => console.log(`radio checked:${e.target.value}`);
+
+
     const handleCloseForm = (falseValue) => {
         setOpen(falseValue);
     };
@@ -299,7 +315,7 @@ export default function User() {
                         <>
                             <Radio.Group onChange={onChange} defaultValue="a">
                                 <Radio.Button onClick={() => openFormAdd()}>Thêm tài khoản</Radio.Button>
-                                <Radio.Button onClick={() => handleMultipleStatusUser()}>Xoá</Radio.Button>
+                                <Radio.Button disabled={selectedRowKeys.length === 0} onClick={() => handleMultipleStatusUser()}>Tắt trạng thái</Radio.Button>
                             </Radio.Group>
                         </>
                     }
@@ -323,12 +339,9 @@ export default function User() {
 
             <UserForm
                 open={open}
-                isAdd={isAdd}
-                isEdit={isEdit}
                 userIdEdit={userIdEdit}
-                callAPI={callAPI}
+                onSetUserIdEdit = {setUserIdEdit}
                 // confirmLoading={confirmLoading}
-                setCallAPI={setCallAPI}
                 dataRole={rolesList}
                 onHandleCloseForm={handleCloseForm}
             />

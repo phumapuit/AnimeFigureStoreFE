@@ -2665,3 +2665,11 @@ section.ant-layout.ant-layout-has-sider.layout-dashboard.layout-profile .header-
 .swal2-shown{
     padding-right: 0!important;
 }
+
+.ant-upload-list-item-container{
+  width: 250px !important;
+  height: 250px !important;
+}
+.ant-upload-list-item-container .ant-upload-list-item img {
+  border-radius: 8px;
+}

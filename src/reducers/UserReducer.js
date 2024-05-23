@@ -19,7 +19,7 @@ import {
   CHANGE_STATUS_USER_FAIL,
   GET_USER_ROLE_LIST_REQUEST,
   GET_USER_ROLE_LIST_SUCCESS,
-  GET_USER_ROLE_LIST_FAIL,
+  GET_USER_ROLE_LIST_FAIL, RESET_USER_DETAIL,
 } from "./constants/user";
 const initialUserState = {
   usersList: [],
@@ -27,6 +27,9 @@ const initialUserState = {
   userDetail: null,
   loading: false,
   error: null,
+  errorAddUser: null,
+  errorUpdateUser:null,
+  errorChangeStatusUser:null,
 };
 const userReducer = (state = initialUserState, action) => {
   switch (action.type) {
@@ -69,22 +72,25 @@ const userReducer = (state = initialUserState, action) => {
     }
 
     case GET_USER_DETAIL_REQUEST: {
-      return { ...state, loading: true, error: null };
+      return {...state}
     }
     case GET_USER_DETAIL_SUCCESS: {
       return {
         ...state,
         userDetail: action.payload.data.data,
-        loading: false,
-        error: null,
       };
     }
     case GET_USER_DETAIL_FAIL: {
       return {
         ...state,
         error: action.payload.error,
-        loading: false,
       };
+    }
+    case RESET_USER_DETAIL:{
+      return {
+        ...state,
+        userDetail: null
+      }
     }
       //
     case CHANGE_STATUS_USER_REQUEST: {
@@ -110,66 +116,53 @@ const userReducer = (state = initialUserState, action) => {
         error: action.payload.error,
       };
     }
-      //
-      // case UPDATE_USER_REQUEST: {
-      //   return {
-      //     ...state,
-      //     loading: true,
-      //     error: null,
-      //   };
-      // }
-      // case UPDATE_USER_SUCCESS: {
-      //   const userUpdate = action.payload.userSelected;
-      //   // const userUpdate = action.payload.data vì data trả về ko có soDt và maLoaiNguoiDung nên ko thể dùng
-      //   const index = state.usersList.findIndex((user) => user.taiKhoan === userUpdate.taiKhoan);
-      //   state.usersList[index] = userUpdate;
-      //   return {
-      //     ...state,
-      //     loading: false,
-      //   };
-      // }
-      // case UPDATE_USER_FAIL: {
-      //   return {
-      //     ...state,
-      //     loading: false,
-      //     error: action.payload.error,
-      //   };
-      // }
-      //
+
+      case UPDATE_USER_REQUEST: {
+        return {
+          ...state,
+          errorUpdateUser: null,
+        };
+      }
+      case UPDATE_USER_SUCCESS: {
+        const userUpdate = action.payload.data.data;
+        console.log(userUpdate)
+        const newUserList = state.usersList.map((user) => {
+          if (user['userId'] === userUpdate['userId']){
+            return userUpdate;
+          }
+          return user;
+        })
+        return {
+          ...state,
+          usersList: newUserList,
+          loading: false,
+        };
+      }
+      case UPDATE_USER_FAIL: {
+        return {
+          ...state,
+          errorUpdateUser: action.payload.error,
+        };
+      }
+
     case ADD_USER_REQUEST: {
       return {
         ...state,
-        loading: true,
-        error: null,
+        errorAddUser: null,
       };
     }
     case ADD_USER_SUCCESS: {
       const userAdd = action.payload.data.data;
-      const configUser = {
-        userId: userAdd["userId"],
-        fullName: userAdd["fullname"],
-        address: userAdd["address"],
-        phoneNumber: userAdd["phonenumber"],
-        email: userAdd["email"],
-        dob: userAdd["dob"],
-        avatar: userAdd["avatar"],
-        roleId: userAdd["roles"][0]["roleId"],
-        roleName: userAdd["roleName"],
-        password: userAdd["password"],
-        deleted: userAdd["deleted"],
-      };
       return {
         ...state,
-        usersList: [...state.usersList, configUser],
-        loading: false,
-        error: null,
+        usersList: [...state.usersList, userAdd],
+        errorAddUser: null,
       };
     }
     case ADD_USER_FAIL: {
       return {
         ...state,
-        loading: false,
-        error: action.payload.error,
+        errorAddUser: action.payload.error,
       };
     }
     default:
