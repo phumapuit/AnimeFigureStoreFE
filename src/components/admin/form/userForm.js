@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import ImgCrop from "antd-img-crop";
 import avatar from "../../../assets/images/avatarUser.png";
 import moment from "moment";
+import { v4 as uuidv4 } from 'uuid';
 
 const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEdit }) => {
     const dispatch = useDispatch();
@@ -18,7 +19,7 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
     const [canEditUser, setCanEditUser] = useState(false);
     const [typeCallAPI, setTypeCallAPI] = useState("");
     const [showInputPassword, setShowInputPassword] = useState(true);
-
+    const [fileList, setFileList] = useState([]);
     const { userDetail, errorAddUser, errorUpdateUser } = useSelector((state) => state.users);
 
     useEffect(() => {
@@ -34,9 +35,11 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
     useEffect(() => {
         console.log("Render when userDetail change! UserDetail now is: ", userDetail);
         if (userDetail != null) {
-            setFileList([{
-                ...fileList, url: `http://localhost:8080${userDetail['avatar']}`
-            }])
+            let url = `http://localhost:8080${userDetail['avatar']}`;
+            (async () => {
+                await loadImg(url);
+            })();
+
             form.setFieldsValue({
                 userId: userDetail["userId"],
                 email: userDetail["email"],
@@ -48,7 +51,7 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                 dob: moment(userDetail["dob"], "DD/MM/YYYY"),
             });
             setTypeCallAPI("edit");
-        } else setTypeCallAPI("add");
+        }
     }, [userDetail]);
     useEffect(() => {
         console.log("Render when DataRole change! DataRole now is: ", dataRole);
@@ -111,6 +114,93 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
             }
         }
     }, [errorUpdateUser, canEditUser]);
+    useEffect(() => {
+        if (userIdEdit === 0 && open) {
+            setTypeCallAPI("add");
+            (async () => {
+                await loadImg('http://localhost:8080/user-photos/default_avatar.jpg');
+            })();
+        }
+        else if (userIdEdit !==0 && open){
+            setTypeCallAPI("edit");
+        }
+    }, [userIdEdit, open]);
+
+    const loadImg = async (linkImg) => {
+        const imageUrl = linkImg;
+        const fileName = linkImg.split('/').pop();
+
+        // Fetch the image data from the URL
+        const response = await fetch(imageUrl);
+        console.log("resp: ",response)
+        const blob = await response.blob();
+        const file = new File([blob], fileName, { type: blob.type });
+
+        // Create an Ant Design file object
+        const defaultFile = {
+            uid: uuidv4(),  // Unique identifier for the file
+            name: fileName,
+            status: 'done',
+            url: imageUrl,
+            originFileObj: file
+        };
+
+        setFileList([defaultFile]);
+
+    };
+
+    const handleChange = (info) => {
+        let file = info.file;
+        setFileList([file]);
+    };
+
+    const onPreview = async (file) => {
+        let src = file.url;
+        if (!src) {
+            src = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file.originFileObj);
+                reader.onload = () => resolve(reader.result);
+            });
+        }
+        const image = new Image();
+        image.src = src;
+        const imgWindow = window.open(src);
+        imgWindow?.document.write(image.outerHTML);
+    };
+
+    async function validationFile(file) {
+        const isImg = file.type === "image/jpeg" || file.type === "image/png";
+        if (!isImg) {
+            await message.error("Chỉ có thể upload ảnh JPG/PNG!");
+            return Upload.LIST_IGNORE;
+        }
+        const sizeImg = file.size / 1024 / 1024 < 30;
+        if (!sizeImg) {
+            // IMG MUST <= 30MB
+            await message.error("Ảnh phải có dung lượng nhỏ hơn 30MB!");
+            return Upload.LIST_IGNORE;
+        }
+        return isImg && sizeImg;
+    }
+
+    const dummyRequest = async ({ file, onSuccess }) => {
+        await validationFile(file);
+        setTimeout(() => {
+            onSuccess("ok");
+        }, 0);
+    };
+
+    const phoneNumberValidator = (_, value) => {
+        const phoneRegex = /^[0-9]{10,15}$/;
+        if (!value) {
+            return Promise.reject();
+        } else if (!phoneRegex.test(value)) {
+            return Promise.reject();
+        } else {
+            return Promise.resolve();
+        }
+    };
 
     const tagRender = (props) => {
         const { label, value, closable, onClose } = props;
@@ -135,6 +225,8 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
 
     const resetUserForm = () => {
         form.resetFields();
+        setFileList([]);
+        setShowInputPassword(true);
     };
 
     const handleCloseForm = () => {
@@ -146,7 +238,6 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
         }
         resetUserForm();
         onSetUserIdEdit(0);
-        setShowInputPassword(true);
     };
 
     const handleAddUser = async (dataNewUser) => {
@@ -162,14 +253,15 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
     };
 
     const handleSubmit = async (values) =>{
-
         values['dob'] = moment(values['dob']).format('DD/MM/YYYY');
+
+        const formData = new FormData();
+
         const json = JSON.stringify(values);
         const blob = new Blob([json], {
             type: 'application/json'
         });
 
-        const formData = new FormData();
         formData.append('avatar', fileList[0].originFileObj)
         formData.append('data', blob);
 
@@ -184,84 +276,20 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
         }
     };
     //ant
-    const [fileList, setFileList] = useState([
-        {
-            uid: "uid-default",
-            name: "avatar-fe-default.png",
-            status: "done",
-            url: `${avatar}`,
-        },
-    ]);
-    const handleChange = (info) => {
-        let fileList = [...info.fileList];
-        fileList = fileList.slice(-1);
-        setFileList(fileList);
-        console.log(info.fileList[0]);
-    };
-    const onPreview = async (file) => {
-        let src = file.url;
-        if (!src) {
-            src = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file.originFileObj);
-                reader.onload = () => resolve(reader.result);
-            });
-        }
-        const image = new Image();
-        image.src = src;
-        const imgWindow = window.open(src);
-        imgWindow?.document.write(image.outerHTML);
-    };
-    async function validationFile(file) {
-        const isImg = file.type === "image/jpeg" || file.type === "image/png";
-        if (!isImg) {
-            await message.error("Chỉ có thể upload ảnh JPG/PNG!");
-            return Upload.LIST_IGNORE;
-        }
-        const sizeImg = file.size / 1024 / 1024 < 30;
-        if (!sizeImg) {
-            // IMG MUST <= 30MB
-            await message.error("Ảnh phải có dung lượng nhỏ hơn 30MB!");
-            return Upload.LIST_IGNORE;
-        }
-        return isImg && sizeImg;
-    }
-    const dummyRequest = async ({ file, onSuccess }) => {
-        await validationFile(file);
-        setTimeout(() => {
-            onSuccess("ok");
-        }, 0);
-    };
-    //-------------------------------------------------------
 
-    const phoneNumberValidator = (_, value) => {
-        const phoneRegex = /^[0-9]{10,15}$/;
-        if (!value) {
-            return Promise.reject();
-        } else if (!phoneRegex.test(value)) {
-            return Promise.reject();
-        } else {
-            return Promise.resolve();
-        }
-    };
+
     return (
         <Modal title="Title" maskClosable={false} open={open} onCancel={() => handleCloseForm()} onOk={() => buttonRef.current.click()}>
             <Form
                 name="trigger"
-                style={{
-                    maxWidth: 600,
-                }}
-                labelCol={{
-                    span: 5,
-                }}
-                wrapperCol={{
-                    span: 18,
-                }}
+                style={{maxWidth: 600,}}
+                labelCol={{span: 5,}}
+                wrapperCol={{span: 18}}
                 layout="horizontal"
                 autoComplete="off"
                 onFinish={handleSubmit}
                 form={form}
-                getContainer={false}
+                getcontainer="false"
                 size="small"
             >
                 <Row>

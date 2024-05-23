@@ -10,7 +10,8 @@ const store = configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(thunk),
-         devTools: process.env.NODE_ENV !== 'production', // Only enable Redux DevTools in non-production environments
+        devTools: process.env.NODE_ENV !== 'production',
+        serializableCheck: false,
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
