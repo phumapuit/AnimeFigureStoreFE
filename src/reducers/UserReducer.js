@@ -19,17 +19,20 @@ import {
   CHANGE_STATUS_USER_FAIL,
   GET_USER_ROLE_LIST_REQUEST,
   GET_USER_ROLE_LIST_SUCCESS,
-  GET_USER_ROLE_LIST_FAIL, RESET_USER_DETAIL,
+  GET_USER_ROLE_LIST_FAIL,
+  RESET_USER_DETAIL,
 } from "./constants/user";
 const initialUserState = {
   usersList: [],
   rolesList: [],
   userDetail: null,
   loading: false,
+  loadingAddUser: false,
+  loadingUpdateUser: false,
   error: null,
   errorAddUser: null,
-  errorUpdateUser:null,
-  errorChangeStatusUser:null,
+  errorUpdateUser: null,
+  errorChangeStatusUser: null,
 };
 const userReducer = (state = initialUserState, action) => {
   switch (action.type) {
@@ -72,7 +75,7 @@ const userReducer = (state = initialUserState, action) => {
     }
 
     case GET_USER_DETAIL_REQUEST: {
-      return {...state}
+      return { ...state };
     }
     case GET_USER_DETAIL_SUCCESS: {
       return {
@@ -86,11 +89,11 @@ const userReducer = (state = initialUserState, action) => {
         error: action.payload.error,
       };
     }
-    case RESET_USER_DETAIL:{
+    case RESET_USER_DETAIL: {
       return {
         ...state,
-        userDetail: null
-      }
+        userDetail: null,
+      };
     }
       //
     case CHANGE_STATUS_USER_REQUEST: {
@@ -117,37 +120,40 @@ const userReducer = (state = initialUserState, action) => {
       };
     }
 
-      case UPDATE_USER_REQUEST: {
-        return {
-          ...state,
-          errorUpdateUser: null,
-        };
-      }
-      case UPDATE_USER_SUCCESS: {
-        const userUpdate = action.payload.data.data;
-        console.log(userUpdate)
-        const newUserList = state.usersList.map((user) => {
-          if (user['userId'] === userUpdate['userId']){
-            return userUpdate;
-          }
-          return user;
-        })
-        return {
-          ...state,
-          usersList: newUserList,
-          loading: false,
-        };
-      }
-      case UPDATE_USER_FAIL: {
-        return {
-          ...state,
-          errorUpdateUser: action.payload.error,
-        };
-      }
+    case UPDATE_USER_REQUEST: {
+      return {
+        ...state,
+        loadingUpdateUser: true,
+        errorUpdateUser: null,
+      };
+    }
+    case UPDATE_USER_SUCCESS: {
+      const userUpdate = action.payload.data.data;
+      console.log(userUpdate);
+      const newUserList = state.usersList.map((user) => {
+        if (user["userId"] === userUpdate["userId"]) {
+          return userUpdate;
+        }
+        return user;
+      });
+      return {
+        ...state,
+        usersList: newUserList,
+        loadingUpdateUser: false,
+      };
+    }
+    case UPDATE_USER_FAIL: {
+      return {
+        ...state,
+        loadingUpdateUser: false,
+        errorUpdateUser: action.payload.error,
+      };
+    }
 
     case ADD_USER_REQUEST: {
       return {
         ...state,
+        loadingAddUser: true,
         errorAddUser: null,
       };
     }
@@ -157,11 +163,13 @@ const userReducer = (state = initialUserState, action) => {
         ...state,
         usersList: [...state.usersList, userAdd],
         errorAddUser: null,
+        loadingAddUser: false,
       };
     }
     case ADD_USER_FAIL: {
       return {
         ...state,
+        loadingAddUser: false,
         errorAddUser: action.payload.error,
       };
     }

@@ -1,7 +1,7 @@
-import {Card, Radio, Table, Avatar, Button, Typography} from "antd";
+import {Card, Radio, Table, Avatar, Button} from "antd";
 import { EditFilled, EyeFilled, EyeInvisibleFilled } from "@ant-design/icons";
 import avatar from "../../../assets/images/avatarUser.png";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { changeStatusUser, getUserRoleList, getUsersList } from "../../../reducers/actions/user";
 import Tooltip from "antd/es/tooltip";
@@ -134,8 +134,6 @@ export default function User() {
 
     const hasSelected = selectedRowKeys.length > 0; // DÙNG BIẾN NÀY LẤY DANH SÁCH MÃ ID ĐƯỢC CHECK, ĐỂ XÁC ĐỊNH DISABLE NUT DELETE ĐI HAY KHÔNG
 
-    const [confirmLoading, setConfirmLoading] = useState(false);
-
     const onChange = (e) => console.log(`radio checked:${e.target.value}`);
     const onSelectChange = (newSelectedRowKeys) => {
         console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -181,6 +179,7 @@ export default function User() {
                     confirmButtonColor: "#28a745",
                 });
             } else if (result.dismiss === Swal.DismissReason.cancel) {
+                setSelectedRowKeys([]);
                 await Swal.fire({
                     title: "Huỷ bỏ",
                     text: "Dữ liệu đã được giữ nguyên",
@@ -208,6 +207,7 @@ export default function User() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 await dispatch(changeStatusUser(arrUserId));
+                setSelectedRowKeys([]);
                 await Swal.fire({
                     title: "Đã thay đổi",
                     text: "Thông tin đã được cập nhập",
@@ -300,7 +300,6 @@ export default function User() {
         });
     });
 
-
     const handleCloseForm = (falseValue) => {
         setOpen(falseValue);
     };
@@ -341,7 +340,6 @@ export default function User() {
                 open={open}
                 userIdEdit={userIdEdit}
                 onSetUserIdEdit = {setUserIdEdit}
-                // confirmLoading={confirmLoading}
                 dataRole={rolesList}
                 onHandleCloseForm={handleCloseForm}
             />

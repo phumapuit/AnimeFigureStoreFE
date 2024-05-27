@@ -1,4 +1,4 @@
-import usersAPI from '../../api/usersAPI';
+import usersAPI from "../../api/usersAPI";
 import {
     LOGIN_FAIL,
     LOGIN_REQUEST,
@@ -9,9 +9,6 @@ import {
     GET_USER_LIST_REQUEST,
     GET_USER_LIST_SUCCESS,
     GET_USER_LIST_FAIL,
-    DELETE_USER_REQUEST,
-    DELETE_USER_SUCCESS,
-    DELETE_USER_FAIL,
     UPDATE_USER_REQUEST,
     UPDATE_USER_SUCCESS,
     UPDATE_USER_FAIL,
@@ -26,9 +23,10 @@ import {
     CHANGE_STATUS_USER_SUCCESS,
     GET_USER_ROLE_LIST_REQUEST,
     GET_USER_ROLE_LIST_FAIL,
-    GET_USER_ROLE_LIST_SUCCESS, RESET_USER_DETAIL
-} from '../constants/user';
-import {Axios as axios} from "axios";
+    GET_USER_ROLE_LIST_SUCCESS,
+    RESET_USER_DETAIL,
+} from "../constants/user";
+import { Axios as axios } from "axios";
 //
 // export const login = (user) => {
 //     return (dispatch) => {
@@ -81,150 +79,146 @@ import {Axios as axios} from "axios";
 export const getUsersList = () => {
     return (dispatch) => {
         dispatch({
-            type: GET_USER_LIST_REQUEST
-        })
-        usersAPI.getUserList()
-            .then(result => {
+            type: GET_USER_LIST_REQUEST,
+        });
+        usersAPI
+            .getUserList()
+            .then((result) => {
                 dispatch({
                     type: GET_USER_LIST_SUCCESS,
-                    payload: { data: result.data }
-                })
+                    payload: { data: result.data },
+                });
             })
-            .catch(
-                error => {
-                    dispatch({
-                        type: GET_USER_LIST_FAIL,
-                        payload: { error: error.message }
-                    })
-                }
-            )
-    }
-}
+            .catch((error) => {
+                dispatch({
+                    type: GET_USER_LIST_FAIL,
+                    payload: { error: error.response.data.message },
+                });
+            });
+    };
+};
 
 export const getUserRoleList = () => {
     return (dispatch) => {
         dispatch({
-            type: GET_USER_ROLE_LIST_REQUEST
-        })
-        usersAPI.getUserRoleList()
-            .then(result => {
+            type: GET_USER_ROLE_LIST_REQUEST,
+        });
+        usersAPI
+            .getUserRoleList()
+            .then((result) => {
                 dispatch({
                     type: GET_USER_ROLE_LIST_SUCCESS,
-                    payload: { data: result.data }
-                })
+                    payload: { data: result.data },
+                });
             })
-            .catch(
-                error => {
-                    dispatch({
-                        type: GET_USER_ROLE_LIST_FAIL,
-                        payload: { error: error.message }
-                    })
-                }
-            )
-    }
-}
+            .catch((error) => {
+                dispatch({
+                    type: GET_USER_ROLE_LIST_FAIL,
+                    payload: { error: error.response.data.message },
+                });
+            });
+    };
+};
 
 export const getUserDetail = (userId) => {
     return (dispatch) => {
         dispatch({
-            type: GET_USER_DETAIL_REQUEST
-        })
-        usersAPI.getUserDetail(userId)
-            .then(result => {
+            type: GET_USER_DETAIL_REQUEST,
+        });
+        usersAPI
+            .getUserDetail(userId)
+            .then((result) => {
                 dispatch({
                     type: GET_USER_DETAIL_SUCCESS,
-                    payload: { data: result.data }
-                })
+                    payload: { data: result.data },
+                });
             })
-            .catch(
-                error => {
-                    dispatch({
-                        type: GET_USER_DETAIL_FAIL,
-                        payload: { error: error.message }
-                    })
-                }
-            )
-    }
-}
+            .catch((error) => {
+                dispatch({
+                    type: GET_USER_DETAIL_FAIL,
+                    payload: { error: error.response.data.message },
+                });
+            });
+    };
+};
 
 export const changeStatusUser = (arrUserId) => {
-    const configData = {"list": arrUserId};
+    const configData = { list: arrUserId };
     return (dispatch) => {
         dispatch({
-            type: CHANGE_STATUS_USER_REQUEST
-        })
-        usersAPI.postChangeStatusUser(configData)
-            .then(result => {
+            type: CHANGE_STATUS_USER_REQUEST,
+        });
+        usersAPI
+            .postChangeStatusUser(configData)
+            .then((result) => {
                 dispatch({
                     type: CHANGE_STATUS_USER_SUCCESS,
                     payload: {
                         data: result.data,
-                        arrUserId: arrUserId
+                        arrUserId: arrUserId,
                     },
-                })
+                });
             })
-            .catch(
-                error => {
-                    dispatch({
-                        type: CHANGE_STATUS_USER_FAIL,
-                        payload: { error: error.message }
-                    })
-                }
-            )
-    }
-}
+            .catch((error) => {
+                dispatch({
+                    type: CHANGE_STATUS_USER_FAIL,
+                    payload: { error: error.response.data.message },
+                });
+            });
+    };
+};
 
 export const resetUserDetail = () => {
     return {
-        type: RESET_USER_DETAIL
-    }
-}
+        type: RESET_USER_DETAIL,
+    };
+};
 
 export const updateUser = (formData) => {
     return (dispatch) => {
         dispatch({
-            type: UPDATE_USER_REQUEST
-        })
-        usersAPI.postUpdateUser(formData)
-            .then(result => {
+            type: UPDATE_USER_REQUEST,
+        });
+        usersAPI
+            .postUpdateUser(formData)
+            .then((result) => {
                 dispatch({
                     type: UPDATE_USER_SUCCESS,
                     payload: {
                         data: result.data,
-                        formData: formData
-                    }
-                })
+                        formData: formData,
+                    },
+                });
             })
-            .catch(
-                error => {
-                    dispatch({
-                        type: UPDATE_USER_FAIL,
-                        payload: { error: error.message }
-                    })
-                }
-            )
-    }
-}
+            .catch((error) => {
+                dispatch({
+                    type: UPDATE_USER_FAIL,
+                    payload: { error: error.response.data.message },
+                });
+            });
+    };
+};
 
 export const addUser = (user) => {
     return (dispatch) => {
         dispatch({
-            type: ADD_USER_REQUEST
-        })
-        usersAPI.postAddUser(user)
-            .then(result => {
+            type: ADD_USER_REQUEST,
+        });
+        usersAPI
+            .postAddUser(user)
+            .then((result) => {
                 dispatch({
                     type: ADD_USER_SUCCESS,
                     payload: {
-                        data: result.data
-                    }
-                })
+                        data: result.data,
+                    },
+                });
             })
-            .catch(error => {
+            .catch((error) => {
                 dispatch({
                     type: ADD_USER_FAIL,
-                    payload: { error: error.message }
-                })
-            })
-    }
-}
+                    payload: { error: error.response.data.message },
+                });
+            });
+    };
+};

@@ -2667,9 +2667,17 @@ section.ant-layout.ant-layout-has-sider.layout-dashboard.layout-profile .header-
 }
 
 .ant-upload-list-item-container{
-  width: 250px !important;
-  height: 250px !important;
+  width: 100% !important;
+  height: 214px !important;
 }
 .ant-upload-list-item-container .ant-upload-list-item img {
   border-radius: 8px;
+}
+#user-form .ant-upload{
+  width: 100%;
+  height:fit-content;
+  border:none;
+}
+.ant-modal-body{
+  margin-top: 30px;
 }

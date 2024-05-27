@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Col, Row, Modal, Form, Input, Button, Alert, Select, Tag, DatePicker, message, Upload } from "antd";
+import { Col, Row, Modal, Form, Input, Button, Select, Tag, DatePicker, message, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser, getUserDetail, resetUserDetail, updateUser } from "../../../reducers/actions/user";
@@ -7,35 +7,36 @@ import Swal from "sweetalert2";
 import ImgCrop from "antd-img-crop";
 import avatar from "../../../assets/images/avatarUser.png";
 import moment from "moment";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEdit }) => {
     const dispatch = useDispatch();
     const [form] = Form.useForm();
     const buttonRef = useRef({});
 
+    const TYPE_ADD = "add";
+    const TYPE_EDIT = "edit";
+
     const [options, setOptions] = useState([]);
-    const [canAddUser, setCanAddUser] = useState(false);
-    const [canEditUser, setCanEditUser] = useState(false);
     const [typeCallAPI, setTypeCallAPI] = useState("");
     const [showInputPassword, setShowInputPassword] = useState(true);
     const [fileList, setFileList] = useState([]);
-    const { userDetail, errorAddUser, errorUpdateUser } = useSelector((state) => state.users);
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const { userDetail, loadingUpdateUser, loadingAddUser, errorAddUser, errorUpdateUser } = useSelector((state) => state.users);
 
     useEffect(() => {
-        console.log("Render when UserIdEdit change! UserIdEdit now is: ", userIdEdit);
         if (userIdEdit !== 0) {
+            console.log("Render when UserIdEdit change! UserIdEdit now is: ", userIdEdit);
             if (onSetUserIdEdit) {
                 dispatch(getUserDetail(userIdEdit));
-                setTypeCallAPI("edit");
                 setShowInputPassword(false);
             }
         }
     }, [userIdEdit]);
     useEffect(() => {
-        console.log("Render when userDetail change! UserDetail now is: ", userDetail);
         if (userDetail != null) {
-            let url = `http://localhost:8080${userDetail['avatar']}`;
+            console.log("Render when userDetail change! UserDetail now is: ", userDetail);
+            let url = `http://localhost:8080${userDetail["avatar"]}`;
             (async () => {
                 await loadImg(url);
             })();
@@ -44,27 +45,28 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                 userId: userDetail["userId"],
                 email: userDetail["email"],
                 password: userDetail["password"],
-                roleId: userDetail["roleList"].map(role => role["roleId"]),
+                roleId: userDetail["roleList"].map((role) => role["roleId"]),
                 fullName: userDetail["fullName"],
                 address: userDetail["address"],
                 phoneNumber: userDetail["phoneNumber"],
                 dob: moment(userDetail["dob"], "DD/MM/YYYY"),
             });
-            setTypeCallAPI("edit");
         }
     }, [userDetail]);
     useEffect(() => {
-        console.log("Render when DataRole change! DataRole now is: ", dataRole);
-        const roleList = [];
-        dataRole.map((item) => {
-            roleList.push({ value: item["roleId"], label: item["roleName"] });
-        });
-        setOptions(roleList);
+        if (dataRole.length > 0){
+            console.log("Render when DataRole change! DataRole now is: ", dataRole);
+            const roleList = [];
+            dataRole.map((item) => {
+                roleList.push({ value: item["roleId"], label: item["roleName"] });
+            });
+            setOptions(roleList);
+        }
     }, [dataRole]);
     useEffect(() => {
-        console.log("Render when ErrorAddUser change! ErrorAddUser now is: ", errorAddUser);
-        if (canAddUser) {
-            if (errorAddUser != null) {
+        if (typeCallAPI === TYPE_ADD) {
+            console.log("Render when ErrorAddUser change! ErrorAddUser now is: ", errorAddUser);
+            if (errorAddUser != null && !loadingAddUser) {
                 Swal.fire({
                     title: "Thất bại",
                     text: `${errorAddUser}`,
@@ -72,25 +74,26 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                     allowOutsideClick: false,
                     confirmButtonColor: "#dc3545",
                 }).then(() => {
-                    resetUserForm();
+                    handleCloseForm();
                 });
             } else {
-                Swal.fire({
-                    title: "Thêm thành công",
-                    text: "Thông tin đã được cập nhập",
-                    icon: "success",
-                    allowOutsideClick: false,
-                }).then(() => {
-                    setCanAddUser(false);
-                    resetUserForm();
-                });
+                if (errorAddUser === null && !loadingAddUser) {
+                    Swal.fire({
+                        title: "Thêm thành công",
+                        text: "Thông tin đã được cập nhập",
+                        icon: "success",
+                        allowOutsideClick: false,
+                    }).then(() => {
+                        handleCloseForm();
+                    });
+                }
             }
         }
-    }, [errorAddUser, canAddUser]);
+    }, [errorAddUser, confirmLoading]);
     useEffect(() => {
-        console.log("Render when ErrorUpdateUser change! ErrorUpdateUser now is: ", errorUpdateUser);
-        if (canEditUser) {
-            if (errorUpdateUser != null) {
+        if (typeCallAPI === TYPE_EDIT) {
+            console.log("Render when ErrorUpdateUser change! ErrorUpdateUser now is: ", errorUpdateUser);
+            if (errorUpdateUser != null && !loadingUpdateUser) {
                 Swal.fire({
                     title: "Thất bại",
                     text: `${errorUpdateUser}`,
@@ -98,55 +101,60 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                     allowOutsideClick: false,
                     confirmButtonColor: "#dc3545",
                 }).then(() => {
-                    resetUserForm();
+                    handleCloseForm();
                 });
             } else {
-                Swal.fire({
-                    title: "Thay đổi thành công",
-                    text: "Thông tin đã được cập nhập",
-                    icon: "success",
-                    allowOutsideClick: false,
-                }).then(() => {
-                    setCanAddUser(false);
-                    dispatch(resetUserDetail());
-                    resetUserForm();
-                });
+                if (errorUpdateUser === null && !loadingUpdateUser) {
+                    Swal.fire({
+                        title: "Thay đổi thành công",
+                        text: "Thông tin đã được cập nhập",
+                        icon: "success",
+                        allowOutsideClick: false,
+                    }).then(() => {
+                        dispatch(resetUserDetail());
+                        handleCloseForm();
+                    });
+                }
             }
         }
-    }, [errorUpdateUser, canEditUser]);
+    }, [errorUpdateUser, confirmLoading]);
+    useEffect(() => {
+        loadingUpdateUser ? setConfirmLoading(true) : setConfirmLoading(false);
+    }, [loadingUpdateUser]);
+    useEffect(() => {
+        loadingAddUser ? setConfirmLoading(true) : setConfirmLoading(false);
+    }, [loadingAddUser]);
     useEffect(() => {
         if (userIdEdit === 0 && open) {
-            setTypeCallAPI("add");
+            setTypeCallAPI(TYPE_ADD);
             (async () => {
-                await loadImg('http://localhost:8080/user-photos/default_avatar.jpg');
+                await loadImg("http://localhost:8080/user-photos/default_avatar.jpg");
             })();
-        }
-        else if (userIdEdit !==0 && open){
-            setTypeCallAPI("edit");
+        } else if (userIdEdit !== 0 && open) {
+            setTypeCallAPI(TYPE_EDIT);
         }
     }, [userIdEdit, open]);
 
     const loadImg = async (linkImg) => {
         const imageUrl = linkImg;
-        const fileName = linkImg.split('/').pop();
+        const fileName = linkImg.split("/").pop();
 
         // Fetch the image data from the URL
         const response = await fetch(imageUrl);
-        console.log("resp: ",response)
+        console.log("resp: ", response);
         const blob = await response.blob();
         const file = new File([blob], fileName, { type: blob.type });
 
         // Create an Ant Design file object
         const defaultFile = {
-            uid: uuidv4(),  // Unique identifier for the file
+            uid: uuidv4(), // Unique identifier for the file
             name: fileName,
-            status: 'done',
+            status: "done",
             url: imageUrl,
-            originFileObj: file
+            originFileObj: file,
         };
 
         setFileList([defaultFile]);
-
     };
 
     const handleChange = (info) => {
@@ -237,91 +245,64 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
             dispatch(resetUserDetail());
         }
         resetUserForm();
+        setConfirmLoading(false);
+        setTypeCallAPI("");
         onSetUserIdEdit(0);
     };
 
     const handleAddUser = async (dataNewUser) => {
         await dispatch(addUser(dataNewUser));
-        setCanAddUser(true);
-        handleCloseForm();
     };
 
     const handleUpdateUser = async (dataUserUpdate) => {
         await dispatch(updateUser(dataUserUpdate));
-        setCanEditUser(true);
-        handleCloseForm();
     };
 
-    const handleSubmit = async (values) =>{
-        values['dob'] = moment(values['dob']).format('DD/MM/YYYY');
+    const handleSubmit = async (values) => {
+        values["dob"] = moment(values["dob"]).format("DD/MM/YYYY");
 
         const formData = new FormData();
 
         const json = JSON.stringify(values);
         const blob = new Blob([json], {
-            type: 'application/json'
+            type: "application/json",
         });
 
-        formData.append('avatar', fileList[0].originFileObj)
-        formData.append('data', blob);
+        formData.append("avatar", fileList[0].originFileObj);
+        formData.append("data", blob);
 
-        if (typeCallAPI === "add") {
-            console.log("DATA POST FROM USER FORM ADD: ", formData.get('data'), " - ", formData.get('avatar'));
+        if (typeCallAPI === TYPE_ADD) {
+            console.log("DATA POST FROM USER FORM ADD: ", formData.get("data"), " - ", formData.get("avatar"));
             await handleAddUser(formData);
-        } else if (typeCallAPI === "edit") {
-            console.log("DATA POST FROM USER FORM EDIT: ", formData.get('data'), " - ", formData.get('avatar'));
+        } else if (typeCallAPI === TYPE_EDIT) {
+            console.log("DATA POST FROM USER FORM EDIT: ", formData.get("data"), " - ", formData.get("avatar"));
             await handleUpdateUser(formData);
         } else {
             console.log("Error! TypeCallAPI now is: ", typeCallAPI);
         }
     };
-    //ant
-
-
+    //style={{position:'absolute', top: '50%', left:'50%', transform:'translate(-50%, -50%)', paddingBottom: '24px'}}
     return (
-        <Modal title="Title" maskClosable={false} open={open} onCancel={() => handleCloseForm()} onOk={() => buttonRef.current.click()}>
-            <Form
-                name="trigger"
-                style={{maxWidth: 600,}}
-                labelCol={{span: 5,}}
-                wrapperCol={{span: 18}}
-                layout="horizontal"
-                autoComplete="off"
-                onFinish={handleSubmit}
-                form={form}
-                getcontainer="false"
-                size="small"
-            >
-                <Row>
-                    <Col flex={2} >
-                        <Form.Item>
-                            <ImgCrop rotationSlider>
-                                <Upload
-                                    customRequest={dummyRequest}
-                                    listType="picture-card"
-                                    fileList={fileList}
-                                    onChange={handleChange}
-                                    onPreview={onPreview}
-                                    beforeUpload={validationFile}
-                                    maxCount={1}
-                                >
-                                    <Button icon={<UploadOutlined/>}>Select</Button>
-                                </Upload>
-
-                            </ImgCrop>
-                        </Form.Item>
-
+        <Modal centered={true} width={800} confirmLoading={confirmLoading} maskClosable={false} open={open} onCancel={() => handleCloseForm()} onOk={() => buttonRef.current.click()}>
+            <Form id='user-form' name="trigger" style={{ maxWidth: 800 }} labelCol={{ span: 5 }} wrapperCol={{ span: 18 }} layout="horizontal" autoComplete="off" onFinish={handleSubmit} form={form} getcontainer="false" size="small">
+                <Row  gutter={{
+                    xs: 8,
+                    sm: 16,
+                    md: 24,
+                    lg: 32,
+                }}>
+                    <Col span={24} sm={8}>
+                        <ImgCrop rotationSlider={false}>
+                            <Upload multiple='false' accept=".jpg,.png,.jpeg" customRequest={dummyRequest} listType="picture-card" fileList={fileList} onChange={handleChange} onPreview={onPreview} beforeUpload={validationFile} maxCount={1}>
+                                <Button style={{width: '100%'}} icon={<UploadOutlined />}>Upload</Button>
+                            </Upload>
+                        </ImgCrop>
                     </Col>
-                    <Col flex={3}>
-                        {userIdEdit!==0 && (
-                        <Form.Item
-                            hasFeedback
-                            label="ID"
-                            name="userId"
-                            validateDebounce={1000}
-                        >
-                            <Input disabled={userIdEdit!==0} />
-                        </Form.Item>
+                    <Col span={24} sm={16}>
+                        {userIdEdit !== 0 && (
+                            <Form.Item hasFeedback label="ID" name="userId" validateDebounce={1000}>
+                                <Input disabled={userIdEdit !== 0} />
+                            </Form.Item>
                         )}
                         <Form.Item
                             hasFeedback
@@ -339,11 +320,12 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                                 },
                                 {
                                     max: 50,
-                                    message: "Độ dài từ 10 - 15 ký tự",
+                                    min: 10,
+                                    message: "Độ dài từ 10 - 50 ký tự",
                                 },
                             ]}
                         >
-                            <Input disabled={userIdEdit!==0} />
+                            <Input disabled={userIdEdit !== 0} />
                         </Form.Item>
                         {showInputPassword && (
                             <Form.Item
@@ -361,7 +343,7 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                                         type: "string",
                                         max: 50,
                                         min: 10,
-                                        message: "Độ dài từ 10 - 15 ký tự",
+                                        message: "Độ dài từ 10 - 50 ký tự",
                                     },
                                 ]}
                             >
@@ -404,7 +386,7 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                                 {
                                     max: 50,
                                     min: 10,
-                                    message: "Độ dài từ 10 - 15 ký tự",
+                                    message: "Độ dài từ 10 - 50 ký tự",
                                 },
                             ]}
                         >
@@ -423,7 +405,7 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                                 {
                                     max: 50,
                                     min: 10,
-                                    message: "Độ dài từ 10 - 15 ký tự",
+                                    message: "Độ dài từ 10 - 50 ký tự",
                                 },
                             ]}
                         >
@@ -460,7 +442,7 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
                                 },
                             ]}
                         >
-                            <DatePicker format="DD/MM/YYYY" size="large" />
+                            <DatePicker style={{width: "100%"}} format="DD/MM/YYYY" size="large" />
                         </Form.Item>
                         <Form.Item hidden>
                             <Button ref={buttonRef} type="ghost" htmlType="submit">
