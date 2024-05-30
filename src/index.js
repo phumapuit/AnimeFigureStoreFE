@@ -9,7 +9,12 @@ import rootReducer from './reducers';
 const store = configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(thunk),
+        getDefaultMiddleware({
+            serializableCheck: {
+                ignoredActions: ["actionWithFilePayload"],
+                ignoredPaths: ["stateWithFile"],
+            },
+        }).concat(thunk),
         devTools: process.env.NODE_ENV !== 'production',
         serializableCheck: false,
 });

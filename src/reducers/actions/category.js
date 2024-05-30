@@ -1,11 +1,28 @@
-// import moviesApi from '../../api/moviesApi';
-// import { GET_MOVIE_LIST_REQUEST, GET_MOVIE_LIST_SUCCESS, GET_MOVIE_LIST_FAIL, DELETE_MOVIE_REQUEST, DELETE_MOVIE_SUCCESS, DELETE_MOVIE_FAIL, UPDATE_MOVIE_REQUEST, UPDATE_MOVIE_FAIL, ADD_MOVIE_REQUEST, ADD_MOVIE_SUCCESS, ADD_MOVIE_FAIL } from '../constants/Movie';
-// import { UPDATE_USER_SUCCESS } from '../constants/User';
-//
+import {GET_PRODUCT_LIST_FAIL, GET_PRODUCT_LIST_REQUEST, GET_PRODUCT_LIST_SUCCESS} from "../constants/product";
+import {GET_CATEGORY_LIST_FAIL, GET_CATEGORY_LIST_REQUEST, GET_CATEGORY_LIST_SUCCESS} from "../constants/category";
+import categoriesAPI from "../../api/categoriesAPI";
+
 export const getCategoryList = () => {
-    return(
-        <>TEST</>
-    )
+    return (dispatch) => {
+        dispatch({
+            type: GET_CATEGORY_LIST_REQUEST
+        })
+        categoriesAPI.getCategoriesList()
+            .then(result => {
+                dispatch({
+                    type: GET_CATEGORY_LIST_SUCCESS,
+                    payload: { data: result.data }
+                })
+            })
+            .catch(
+                error => {
+                    dispatch({
+                        type: GET_CATEGORY_LIST_FAIL,
+                        payload: { error: error.response.data.message, }
+                    })
+                }
+            )
+    }
     // return (dispatch) => {
     //     dispatch({
     //         type: GET_MOVIE_LIST_REQUEST

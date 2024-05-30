@@ -281,7 +281,7 @@ const UserForm = ({ open, onHandleCloseForm, userIdEdit, dataRole, onSetUserIdEd
             console.log("Error! TypeCallAPI now is: ", typeCallAPI);
         }
     };
-    //style={{position:'absolute', top: '50%', left:'50%', transform:'translate(-50%, -50%)', paddingBottom: '24px'}}
+
     return (
         <Modal centered={true} width={800} confirmLoading={confirmLoading} maskClosable={false} open={open} onCancel={() => handleCloseForm()} onOk={() => buttonRef.current.click()}>
             <Form id='user-form' name="trigger" style={{ maxWidth: 800 }} labelCol={{ span: 5 }} wrapperCol={{ span: 18 }} layout="horizontal" autoComplete="off" onFinish={handleSubmit} form={form} getcontainer="false" size="small">

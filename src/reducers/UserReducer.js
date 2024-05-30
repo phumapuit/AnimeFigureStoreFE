@@ -99,9 +99,7 @@ const userReducer = (state = initialUserState, action) => {
     case CHANGE_STATUS_USER_REQUEST: {
       return {
         ...state,
-        loading: true,
-        error: null,
-        message: null,
+        errorChangeStatusUser: null,
       };
     }
     case CHANGE_STATUS_USER_SUCCESS: {
@@ -109,14 +107,13 @@ const userReducer = (state = initialUserState, action) => {
       return {
         ...state,
         usersList: state.usersList.map((user) => (arrUserId.includes(user.userId) ? { ...user, deleted: !user.deleted } : user)),
-        loading: false,
+        errorChangeStatusUser: null,
       };
     }
     case CHANGE_STATUS_USER_FAIL: {
       return {
         ...state,
-        loading: false,
-        error: action.payload.error,
+        errorChangeStatusUser: action.payload.error,
       };
     }
 

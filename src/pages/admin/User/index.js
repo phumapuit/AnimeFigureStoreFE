@@ -1,9 +1,9 @@
-import {Card, Radio, Table, Avatar, Button} from "antd";
-import { EditFilled, EyeFilled, EyeInvisibleFilled } from "@ant-design/icons";
-import avatar from "../../../assets/images/avatarUser.png";
+import {Card, Radio, Table, Avatar, Button, Image } from "antd";
+import {EditFilled, EyeFilled, EyeInvisibleFilled, ZoomInOutlined, ZoomOutOutlined} from "@ant-design/icons";
+// import avatar from "../../../assets/images/avatarUser.png";
 import React, {useEffect, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { changeStatusUser, getUserRoleList, getUsersList } from "../../../reducers/actions/user";
+import {changeStatusUser, getUserRoleList, getUsersList, resetUserDetail} from "../../../reducers/actions/user";
 import Tooltip from "antd/es/tooltip";
 import moment from "moment";
 import Swal from "sweetalert2";
@@ -13,6 +13,7 @@ import UserForm from "../../../components/admin/form/userForm";
 export default function User() {
     const disabled = "Tạm ngưng";
     const enable = "Hoạt động";
+    const avatar = "http://localhost:8080/user-photos/default_avatar.jpg"
     const columns = [
         {
             title: "HỈNH ẢNH",
@@ -250,14 +251,19 @@ export default function User() {
     //     return <h1>TẮT SERVER CMNRRRRRRRRRRRRRRRRRRR</h1>;
     // }
     let dataUser = [];
+    let srcImg = "";
     usersList.map((userItem) => {
+        srcImg = "http://localhost:8080" + userItem["avatar"];
         return dataUser.push({
             key: userItem["userId"],
             image: (
                 <>
-                    <Avatar.Group>
-                        <Avatar className="shape-avatar" shape="square" size={40} src={userItem["avatar"] ? "http://localhost:8080" + userItem["avatar"] : avatar} />
-                    </Avatar.Group>{" "}
+                    <Image
+                        width={40}
+                        height={40}
+                        src={srcImg}
+                        fallback={avatar}
+                    />
                 </>
             ),
             nameUser: userItem["fullName"],

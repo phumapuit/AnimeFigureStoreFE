@@ -186,7 +186,7 @@ export const updateUser = (formData) => {
                     type: UPDATE_USER_SUCCESS,
                     payload: {
                         data: result.data,
-                        formData: formData,
+                        nameImg: formData.get("avatar").name,
                     },
                 });
             })

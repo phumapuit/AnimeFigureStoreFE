@@ -1,9 +1,34 @@
-import {GET_PRODUCT_LIST_FAIL, GET_PRODUCT_LIST_REQUEST, GET_PRODUCT_LIST_SUCCESS} from "./constants/product";
+import {
+    ADD_PRODUCT_FAIL,
+    ADD_PRODUCT_REQUEST,
+    ADD_PRODUCT_SUCCESS,
+    CHANGE_STATUS_PRODUCT_FAIL,
+    CHANGE_STATUS_PRODUCT_REQUEST,
+    CHANGE_STATUS_PRODUCT_SUCCESS,
+    GET_PRODUCT_DETAIL_FAIL,
+    GET_PRODUCT_DETAIL_REQUEST,
+    GET_PRODUCT_DETAIL_SUCCESS,
+    GET_PRODUCT_LIST_FAIL,
+    GET_PRODUCT_LIST_REQUEST,
+    GET_PRODUCT_LIST_SUCCESS,
+    RESET_PRODUCT_DETAIL,
+    UPDATE_PRODUCT_FAIL,
+    UPDATE_PRODUCT_REQUEST,
+    UPDATE_PRODUCT_SUCCESS,
+} from "./constants/product";
 
 const initialProductState = {
     productList: [],
+    productDetail: null,
+
     loading: false,
+    loadingAddProduct: false,
+    loadingUpdateProduct: false,
+
     error: null,
+    errorAddProduct: null,
+    errorUpdateProduct: null,
+    errorChangeStatusProduct: null,
 };
 
 const productReducer = (state = initialProductState, action) => {
@@ -14,9 +39,9 @@ const productReducer = (state = initialProductState, action) => {
         case GET_PRODUCT_LIST_SUCCESS: {
             return {
                 ...state,
-                productList: action.payload.data,
+                productList: action.payload.data.data,
                 loading: false,
-                error: null
+                error: null,
             };
         }
         case GET_PRODUCT_LIST_FAIL: {
@@ -26,79 +51,105 @@ const productReducer = (state = initialProductState, action) => {
                 loading: false,
             };
         }
+        case GET_PRODUCT_DETAIL_REQUEST: {
+            return { ...state };
+        }
+        case GET_PRODUCT_DETAIL_SUCCESS: {
+            return {
+                ...state,
+                productDetail: action.payload.data.data,
+            };
+        }
+        case GET_PRODUCT_DETAIL_FAIL: {
+            return {
+                ...state,
+                error: action.payload.error,
+            };
+        }
+        case RESET_PRODUCT_DETAIL: {
+            return {
+                ...state,
+                productDetail: null,
+            };
+        }
         //
-        // case DELETE_USER_REQUEST: {
-        //   return {
-        //     ...state,
-        //     loading: true,
-        //     error: null,
-        //     message: null,
-        //   };
-        // }
-        // case DELETE_USER_SUCCESS: {
-        //   // xóa thành công chỉ trả về câu commnet thành công nên không cần thiết phải in ra
-        //   const index = state.usersList.findIndex((user) => user.taiKhoan === action.payload.userSelected);
-        //   state.usersList.splice(index, 1);
-        //   return {
-        //     ...state,
-        //     loading: false,
-        //   };
-        // }
-        // case DELETE_USER_FAIL: {
-        //   return {
-        //     ...state,
-        //     loading: false,
-        //     error: action.payload.error,
-        //   };
-        // }
-        //
-        // case UPDATE_USER_REQUEST: {
-        //   return {
-        //     ...state,
-        //     loading: true,
-        //     error: null,
-        //   };
-        // }
-        // case UPDATE_USER_SUCCESS: {
-        //   const userUpdate = action.payload.userSelected;
-        //   // const userUpdate = action.payload.data vì data trả về ko có soDt và maLoaiNguoiDung nên ko thể dùng
-        //   const index = state.usersList.findIndex((user) => user.taiKhoan === userUpdate.taiKhoan);
-        //   state.usersList[index] = userUpdate;
-        //   return {
-        //     ...state,
-        //     loading: false,
-        //   };
-        // }
-        // case UPDATE_USER_FAIL: {
-        //   return {
-        //     ...state,
-        //     loading: false,
-        //     error: action.payload.error,
-        //   };
-        // }
-        //
-        // case ADD_USER_REQUEST: {
-        //   return {
-        //     ...state,
-        //     loading: true,
-        //     error: null,
-        //   };
-        // }
-        // case ADD_USER_SUCCESS: {
-        //   const userAdd = action.payload.userAdd;
-        //   state.usersList.unshift(userAdd);
-        //   return {
-        //     ...state,
-        //     loading: false,
-        //   };
-        // }
-        // case ADD_USER_FAIL: {
-        //   return {
-        //     ...state,
-        //     loading: false,
-        //     error: action.payload.error,
-        //   };
-        // }
+        case CHANGE_STATUS_PRODUCT_REQUEST: {
+            return {
+                ...state,
+                errorChangeStatusProduct: null,
+            };
+        }
+        case CHANGE_STATUS_PRODUCT_SUCCESS: {
+            const { arrProductId } = action.payload;
+            return {
+                ...state,
+                productList: state.productList.map((product) => (arrProductId.includes(product["productId"]) ? { ...product, deleted: !product["deleted"] } : product)),
+                errorChangeStatusProduct: null,
+            };
+        }
+        case CHANGE_STATUS_PRODUCT_FAIL: {
+            return {
+                ...state,
+                errorChangeStatusProduct: action.payload.error,
+            };
+        }
+
+        case UPDATE_PRODUCT_REQUEST: {
+            return {
+                ...state,
+                loadingUpdateProduct: true,
+                errorUpdateProduct: null,
+            };
+        }
+        case UPDATE_PRODUCT_SUCCESS: {
+            const value = action.payload.value;
+            const nameImg = action.payload.nameImg;
+            const handleValue = {...value,
+                images : `/product-photos/${value["productId"]}/${nameImg}`,
+            };
+            return {
+                ...state,
+                productList: state.productList.map((product) => (product["productId"] === handleValue["productId"]) ? handleValue : product),
+                loadingUpdateProduct: false,
+            };
+        }
+        case UPDATE_PRODUCT_FAIL: {
+            return {
+                ...state,
+                loadingUpdateProduct: false,
+                errorUpdateProduct: action.payload.error,
+            };
+        }
+
+        case ADD_PRODUCT_REQUEST: {
+            return {
+                ...state,
+                loadingAddProduct: true,
+                errorAddProduct: null,
+            };
+        }
+        case ADD_PRODUCT_SUCCESS: {
+            const userId = action.payload?.data?.data.userId;
+            const value = action.payload.value;
+            const nameImg = action.payload.nameImg
+            console.log(value)
+            const handleData = {...value,
+                images : userId!== undefined ?`/product-photos/${userId}/${nameImg}`:`/user-photos/default_avatar.jpg`,
+            };
+            return {
+                ...state,
+                productList: [...state.productList, handleData],
+                errorAddProduct: null,
+                loadingAddProduct: false,
+            };
+        }
+        case ADD_PRODUCT_FAIL: {
+            return {
+                ...state,
+                loadingAddProduct: false,
+                errorAddProduct: action.payload.error,
+            };
+        }
         default:
             return state;
     }
